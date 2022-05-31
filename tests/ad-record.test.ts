@@ -4,7 +4,7 @@ test("Can build AdRecord", ()=>{
     const ad = new AdRecord({
         name: 'Test name',
         description: 'haha',
-        url: 'https://rafalfuz.pl',
+        url: 'https://www.google.pl',
         price: 100,
         lat: 9,
         lon: 9

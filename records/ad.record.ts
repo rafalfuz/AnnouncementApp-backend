@@ -1,11 +1,15 @@
-import { AdEntity } from "../types";
-import { ValidationError } from "../unils/errors";
+import { FieldPacket } from "mysql2";
+import Pool from "mysql2/typings/mysql/lib/Pool";
+import PoolCluster from "mysql2/typings/mysql/lib/PoolCluster";
+import { AdEntity, NewAdEntity } from "../types";
+import { pool } from "../utils/db";
+import { ValidationError } from "../utils/errors";
 
-interface NewAdEntity extends Omit<AdEntity, 'id'>{
-    id?: string
-}
+
+type AdRecordResults = [AdEntity[], FieldPacket[]]
 
 export class AdRecord implements AdEntity {
+    
     public id: string;
     public name: string;
     public description: string;
@@ -34,5 +38,12 @@ export class AdRecord implements AdEntity {
         this.url = obj.url,
         this.lat = obj.lat,
         this.lon = obj.lon
+    }
+
+    static async getOne(id: string):Promise<AdRecord | null> {
+        const [result] = await pool.execute("SELECT * FROM `ads` WHERE id = :id",{
+            id
+        }) as AdRecordResults
+        return new AdRecord(result[0])
     }
 }

@@ -5,5 +5,6 @@ test('AdRecord returns data from database for one entry', async ()=>{
     
     expect(ad).toBeDefined();
     expect(ad.id).toBe('abc');
-    expect(ad.title).toBe('test')
+    expect(ad.name).toBe('test')
 })
+
