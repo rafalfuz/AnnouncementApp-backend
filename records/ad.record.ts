@@ -1,7 +1,8 @@
 import { FieldPacket } from "mysql2";
 import Pool from "mysql2/typings/mysql/lib/Pool";
 import PoolCluster from "mysql2/typings/mysql/lib/PoolCluster";
-import { AdEntity, NewAdEntity } from "../types";
+import { resourceLimits } from "worker_threads";
+import { AdEntity, NewAdEntity, SimpleAdEntity } from "../types";
 import { pool } from "../utils/db";
 import { ValidationError } from "../utils/errors";
 
@@ -45,5 +46,17 @@ export class AdRecord implements AdEntity {
             id
         }) as AdRecordResults
         return new AdRecord(result[0])
+    }
+
+    static async findAll(name:string): Promise<SimpleAdEntity[]>{
+        const [result] = await pool.execute("SELECT * FROM `ads` WHERE `name` LIKE :search", {
+            search: `%${name}%`,
+        } ) as AdRecordResults;
+
+        return result.map(result => {
+            const {id,lat,lon} = result;
+
+            return {id,lat,lon}
+        })
     }
 }
