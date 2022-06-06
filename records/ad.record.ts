@@ -1,16 +1,14 @@
 import { FieldPacket } from "mysql2";
-import Pool from "mysql2/typings/mysql/lib/Pool";
-import PoolCluster from "mysql2/typings/mysql/lib/PoolCluster";
-import { resourceLimits } from "worker_threads";
 import { AdEntity, NewAdEntity, SimpleAdEntity } from "../types";
 import { pool } from "../utils/db";
 import { ValidationError } from "../utils/errors";
+import {v4 as uuid} from 'uuid'
 
 
 type AdRecordResults = [AdEntity[], FieldPacket[]]
 
 export class AdRecord implements AdEntity {
-    
+       
     public id: string;
     public name: string;
     public description: string;
@@ -32,7 +30,8 @@ export class AdRecord implements AdEntity {
         if(obj.price < 0 || obj.price > 9999999){
             throw new ValidationError('Cena nie moze być mniejsza niż 0 oraz większa niż 9 999 999')
         }
-
+        
+        this.id = obj.id,
         this.name = obj.name,
         this.description = obj.description,
         this.price = obj.price,
@@ -42,10 +41,11 @@ export class AdRecord implements AdEntity {
     }
 
     static async getOne(id: string):Promise<AdRecord | null> {
-        const [result] = await pool.execute("SELECT * FROM `ads` WHERE id = :id",{
-            id
+        const [result] = await pool.execute("SELECT * FROM `ads` WHERE `id` = :id",{
+            id,
         }) as AdRecordResults
-        return new AdRecord(result[0])
+
+        return result.length === 0 ? null : new AdRecord(result[0]);
     }
 
     static async findAll(name:string): Promise<SimpleAdEntity[]>{
@@ -53,10 +53,20 @@ export class AdRecord implements AdEntity {
             search: `%${name}%`,
         } ) as AdRecordResults;
 
-        return result.map(result => {
-            const {id,lat,lon} = result;
+        return result.map(item => {
+            const {id,lat,lon} = item;
 
             return {id,lat,lon}
         })
+    }
+
+    async insert():Promise<void> {
+        if(!this.id){
+            this.id = uuid()
+        } else {
+            throw new Error(`Cannot insert`)
+        }
+
+        await pool.execute("INSERT INTO `ads`(`id`, `name`, `description`,`url`,`price`,`lat`,`lon`) VALUES(:id,:name,:description,:price,:url,:lat,:lon)", this)
     }
 }
