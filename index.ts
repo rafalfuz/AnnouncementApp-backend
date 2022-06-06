@@ -3,6 +3,7 @@ import cors from 'cors'
 import 'express-async-errors'
 import { handleError } from './utils/errors'
 import rateLimit from 'express-rate-limit'
+import { adRouter } from './routers/ad.router'
 
 const app = express()
 const limiter = rateLimit({
@@ -18,7 +19,7 @@ app.use(json())
 app.get('/', async(req, res)=>{
     throw new Error('Errrrrrrorrr!')
 })
-
+app.use('/ad', adRouter)
 app.use(limiter)
 app.use(handleError)
 
